@@ -1,18 +1,21 @@
 package life.league.challenge.kotlin.core.network
 
+import life.league.challenge.kotlin.BuildConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+/**
+ * Legacy service accessor retained for compatibility.
+ * New code should consume [Api] from Hilt modules.
+ */
 object Service {
 
-    private const val HOST = "https://northamerica-northeast1-league-engineering-hiring.cloudfunctions.net/mobile-challenge-api/"
-    private const val TAG = "Service"
-
     val api: Api by lazy {
-        val retrofit = Retrofit.Builder()
-                .baseUrl(HOST)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-        retrofit.create<Api>(Api::class.java)
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.API_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(Api::class.java)
     }
+
 }

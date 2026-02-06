@@ -4,12 +4,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import life.league.challenge.kotlin.core.network.Api
 import life.league.challenge.kotlin.data.auth.CredentialsProvider
+import life.league.challenge.kotlin.data.mapper.FeedPostMapper
 import life.league.challenge.kotlin.model.Account
 import life.league.challenge.kotlin.model.Album
 import life.league.challenge.kotlin.model.Photo
 import life.league.challenge.kotlin.model.Post
 import life.league.challenge.kotlin.model.User
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -38,13 +40,9 @@ class NetworkPostsRepositoryTest {
                 company = TestData.company()
             )
         )
-        val albums = listOf(
-            Album(
-                userId = 7,
-                id = 101,
-                title = "Sample Album"
-            )
-        )
+
+        val albums = listOf(Album(userId = 7, id = 101, title = "Sample Album"))
+
         val photos = listOf(
             Photo(
                 albumId = 101,
@@ -63,7 +61,8 @@ class NetworkPostsRepositoryTest {
         )
         val repository = NetworkPostsRepository(
             api = api,
-            credentialsProvider = TestCredentialsProvider()
+            credentialsProvider = TestCredentialsProvider(),
+            feedPostMapper = FeedPostMapper()
         )
 
         val result = repository.fetchPosts()
@@ -75,6 +74,30 @@ class NetworkPostsRepositoryTest {
         assertEquals(1, api.albumsCalls)
         assertEquals(1, api.photosCalls)
         assertEquals("api-key", api.lastApiKey)
+    }
+
+    @Test
+    fun `fetch posts fails fast when credentials missing`() = runTest {
+        val api = FakeApi(
+            loginResult = Account(apiKey = "api-key"),
+            usersResult = emptyList(),
+            postsResult = emptyList(),
+            albumsResult = emptyList(),
+            photosResult = emptyList()
+        )
+        val repository = NetworkPostsRepository(
+            api = api,
+            credentialsProvider = object : CredentialsProvider {
+                override val username: String = ""
+                override val password: String = ""
+            },
+            feedPostMapper = FeedPostMapper()
+        )
+
+        val error = runCatching { repository.fetchPosts() }.exceptionOrNull()
+
+        assertTrue(error is IllegalStateException)
+        assertEquals(0, api.loginCalls)
     }
 
     private class FakeApi(

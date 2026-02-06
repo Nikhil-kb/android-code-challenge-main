@@ -1,19 +1,53 @@
 # android-code-challenge
 This repo is for the Android coding interview for new developers :)
 
-IMPORTANT NOTES FOR CANDIDATES:
-*******************************
+## What was improved
 
-* This project was setup using Android Studio Koala, but please feel to use the latest release
-version of Android Studio and update the project as required to write this challenge. 
+- Added **Hilt dependency injection** for app-wide dependency graph management.
+- Refactored data mapping into a dedicated mapper (`FeedPostMapper`) to keep repository logic focused.
+- Kept architecture layered:
+    - `presentation` (Compose + ViewModel)
+    - `domain` (use case + repository contract)
+    - `data` (repository + mapper + credential provider)
+    - `di` (Hilt modules and qualifiers)
+- Removed hardcoded API credentials from resources.
+- Added BuildConfig-based configuration for endpoint and credentials via Gradle properties.
+- Added/updated unit tests for mapper and repository behavior.
 
-* Please write the challenge using Kotlin and use any architectural patterns and libraries you
-think are most well suited to complete the project. Using Jetpack Compose for UX is strongly
-encouraged. 
+## Configuration
 
-* Don't forget to write some unit tests to demonstrate how you would test this project! 
-You don't need to write full test suite if you have time constraints, but including a
-sample of well written tests is critical to achieve a successful evaluation.
+Add these properties in either:
+- `~/.gradle/gradle.properties`, or
+- project `local.properties` / `gradle.properties`.
 
-* Please put build instructions, assumptions and any other notes that you'd like your reviewers to 
-know about in this file
+```properties
+CHALLENGE_BASE_URL=https://northamerica-northeast1-league-engineering-hiring.cloudfunctions.net/mobile-challenge-api/
+CHALLENGE_API_USERNAME=hello
+CHALLENGE_API_PASSWORD=world
+```
+
+> Credentials are intentionally not stored in source resources.
+
+## Tech stack
+
+- Kotlin
+- Jetpack Compose
+- Material 3 theme from `ui.theme`
+- Coroutines
+- Retrofit + Gson converter
+- Hilt (DI)
+- JUnit + coroutines-test
+
+## Build & test
+
+```bash
+./gradlew :kotlin_app:test
+./gradlew :kotlin_app:assembleDebug
+```
+
+## Notes for reviewers
+
+- `MainActivity` now receives `PostsViewModel` through Hilt (`hiltViewModel()`).
+- `ChallengeApplication` initializes Hilt graph.
+- `NetworkPostsRepository` validates credentials are present before login.
+- `FeedPostMapper` has dedicated unit tests for avatar fallback behavior.

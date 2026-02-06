@@ -3,50 +3,29 @@ package life.league.challenge.kotlin.data.repository
 import life.league.challenge.kotlin.core.network.Api
 import life.league.challenge.kotlin.core.network.login
 import life.league.challenge.kotlin.data.auth.CredentialsProvider
+import life.league.challenge.kotlin.data.mapper.FeedPostMapper
 import life.league.challenge.kotlin.domain.repository.PostsRepository
-import life.league.challenge.kotlin.model.Album
 import life.league.challenge.kotlin.model.FeedPost
-import life.league.challenge.kotlin.model.Photo
-import life.league.challenge.kotlin.model.Post
-import life.league.challenge.kotlin.model.User
+import javax.inject.Inject
 
-/** Network-backed repository that authenticates before fetching posts. */
-class NetworkPostsRepository(
+/**
+ * Network-backed repository that authenticates and composes feed data from multiple endpoints.
+ */
+class NetworkPostsRepository @Inject constructor(
     private val api: Api,
-    private val credentialsProvider: CredentialsProvider
-) : PostsRepository {
+    private val credentialsProvider: CredentialsProvider,
+    private val feedPostMapper: FeedPostMapper
+    ) : PostsRepository {
     override suspend fun fetchPosts(): List<FeedPost> {
+        check(credentialsProvider.username.isNotBlank()) { "API username is missing. Set CHALLENGE_API_USERNAME." }
+        check(credentialsProvider.password.isNotBlank()) { "API password is missing. Set CHALLENGE_API_PASSWORD." }
+
         val account = api.login(credentialsProvider.username, credentialsProvider.password)
         val apiKey = account.apiKey ?: error("Missing api key")
         val users = api.users(apiKey)
         val posts = api.posts(apiKey)
         val albums = api.albums(apiKey)
         val photos = api.photos(apiKey)
-        return mergeFeed(posts, users, albums, photos)
-    }
+        return feedPostMapper.map(posts, users, albums, photos)    }
 
-    private fun mergeFeed(
-        posts: List<Post>,
-        users: List<User>,
-        albums: List<Album>,
-        photos: List<Photo>
-    ): List<FeedPost> {
-        val usersById = users.associateBy { it.id }
-        val albumsById = albums.associateBy { it.id }
-        val photosByAlbumId = photos.groupBy { it.albumId }
-
-        return posts.map { post ->
-            val user = usersById[post.userId]
-            val avatar = user?.avatarUrl ?: albumsById.values.firstOrNull { it.userId == post.userId }
-                ?.let { album -> photosByAlbumId[album.id]?.firstOrNull()?.thumbnailUrl }
-
-            FeedPost(
-                id = post.id,
-                title = post.title,
-                description = post.body,
-                username = user?.username ?: "Unknown",
-                avatarUrl = avatar
-            )
-        }
-    }
 }

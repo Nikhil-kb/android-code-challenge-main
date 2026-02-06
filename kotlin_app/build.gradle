@@ -1,6 +1,43 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'dagger.hilt.android.plugin'
+
+import java.util.Properties
+
+/**
+ * Reads a property from (highest to lowest priority):
+ * 1) environment variables,
+ * 2) Gradle properties,
+ * 3) local.properties.
+ */
+def readConfig(String name, String fallback = null) {
+    def envValue = System.getenv(name)
+    if (envValue != null && !envValue.trim().isEmpty()) {
+        return envValue
+    }
+
+    def gradleValue = providers.gradleProperty(name).orNull
+    if (gradleValue != null && !gradleValue.trim().isEmpty()) {
+        return gradleValue
+    }
+
+    def localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        def localProperties = new Properties()
+        localPropertiesFile.withInputStream { stream ->
+            localProperties.load(stream)
+        }
+        def localValue = localProperties.getProperty(name)
+        if (localValue != null && !localValue.trim().isEmpty()) {
+            return localValue
+        }
+    }
+
+    return fallback
+}
+
 android {
     namespace "life.league.challenge.kotlin"
 
@@ -12,6 +49,27 @@ android {
         versionCode 1
         versionName "1.0"
 
+        /*// Prefer supplying values from ~/.gradle/gradle.properties or local.properties.
+        // This keeps environment-specific config out of source code.
+        def apiBaseUrl = (project.findProperty("CHALLENGE_BASE_URL") ?: "https://northamerica-northeast1-league-engineering-hiring.cloudfunctions.net/mobile-challenge-api/").toString()
+        def apiUsername = (project.findProperty("CHALLENGE_API_USERNAME") ?: "").toString()
+        def apiPassword = (project.findProperty("CHALLENGE_API_PASSWORD") ?: "").toString()
+
+        buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
+        buildConfigField "String", "API_USERNAME", "\"${apiUsername}\""
+        buildConfigField "String", "API_PASSWORD", "\"${apiPassword}\""*/
+
+        // Developer-friendly defaults for this coding challenge.
+        // Override with environment / gradle / local.properties values when needed.
+        def apiBaseUrl = readConfig("CHALLENGE_BASE_URL", "https://northamerica-northeast1-league-engineering-hiring.cloudfunctions.net/mobile-challenge-api/").toString()
+        def apiUsername = readConfig("CHALLENGE_API_USERNAME", "hello").toString()
+        def apiPassword = readConfig("CHALLENGE_API_PASSWORD", "world").toString()
+
+        buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
+        buildConfigField "String", "API_USERNAME", "\"${apiUsername}\""
+        buildConfigField "String", "API_PASSWORD", "\"${apiPassword}\""
+
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -19,6 +77,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+
+            // Prevent shipping challenge defaults in production-like builds.
+            buildConfigField "String", "API_USERNAME", "\"\""
+            buildConfigField "String", "API_PASSWORD", "\"\""
         }
     }
 
@@ -33,6 +96,7 @@ android {
 
     buildFeatures {
         compose true
+        buildConfig true
     }
 }
 
@@ -40,7 +104,6 @@ kotlin {
     jvmToolchain(17)
 }
 
-// Feel free to add, remove or change dependencies as you see fit
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -61,6 +124,11 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
     implementation "io.coil-kt:coil-compose:2.6.0"
+
+    implementation 'com.google.dagger:hilt-android:2.52'
+    kapt 'com.google.dagger:hilt-compiler:2.52'
+    implementation 'androidx.hilt:hilt-navigation-compose:1.2.0'
+
 
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1"
     testImplementation 'junit:junit:4.13.2'

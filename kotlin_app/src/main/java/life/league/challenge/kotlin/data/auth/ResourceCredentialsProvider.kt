@@ -1,15 +1,16 @@
 package life.league.challenge.kotlin.data.auth
 
-import android.content.Context
-import life.league.challenge.kotlin.R
+import life.league.challenge.kotlin.BuildConfig
+import javax.inject.Inject
 
-/** Loads credentials from string resources for local testing or demo purposes. */
-class ResourceCredentialsProvider(
-    private val context: Context
-) : CredentialsProvider {
+/**
+ * Reads credentials from BuildConfig values supplied by Gradle properties.
+ * This avoids committing sensitive values in source resources.
+ */
+class ResourceCredentialsProvider @Inject constructor() : CredentialsProvider {
     override val username: String
-        get() = context.getString(R.string.api_username)
+        get() = BuildConfig.API_USERNAME
 
     override val password: String
-        get() = context.getString(R.string.api_password)
+        get() = BuildConfig.API_PASSWORD
 }

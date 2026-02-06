@@ -2,8 +2,10 @@ package life.league.challenge.kotlin.domain.usecase
 
 import life.league.challenge.kotlin.domain.repository.PostsRepository
 import life.league.challenge.kotlin.model.FeedPost
+import javax.inject.Inject
 
-class GetPostsUseCase(
+/** Simple use case wrapping post retrieval from repository layer. */
+class GetPostsUseCase @Inject constructor(
     private val postsRepository: PostsRepository
 ) {
     suspend operator fun invoke(): List<FeedPost> = postsRepository.fetchPosts()
