@@ -13,141 +13,64 @@ import life.league.challenge.kotlin.model.User
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.inOrder
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class NetworkPostsRepositoryTest {
 
     @Test
     fun `fetch posts logs in and returns posts`() = runTest {
-        val expectedPosts = listOf(
-            Post(
-                userId = 7,
-                id = 1,
-                title = "Title",
-                body = "Description"
-            )
-        )
-        val users = listOf(
-            User(
-                id = 7,
-                avatarUrl = "https://example.com/avatar.png",
-                name = "Test User",
-                username = "user",
-                email = "user@example.com",
-                address = TestData.address(),
-                phone = "123",
-                website = "example.com",
-                company = TestData.company()
-            )
-        )
 
-        val albums = listOf(Album(userId = 7, id = 101, title = "Sample Album"))
+        val expectedPosts = listOf(samplePost(userId = 7, id = 1, title = "Title"))
+        val users = listOf(sampleUser(id = 7))
+        val albums = listOf(sampleAlbum(userId = 7, id = 101))
+        val photos = listOf(samplePhoto(albumId = 101, id = 202))
+        val apiKey = "api-key"
+        val api = mock<Api>()
+        val credentialsProvider = mock<CredentialsProvider> {
+            on { username } doReturn "hello"
+            on { password } doReturn "world"
+        }
+        whenever(api.login(any())).thenReturn(Account(apiKey = apiKey))
+        whenever(api.users(apiKey)).thenReturn(users)
+        whenever(api.posts(apiKey, null)).thenReturn(expectedPosts)
+        whenever(api.albums(apiKey, null)).thenReturn(albums)
+        whenever(api.photos(apiKey, null)).thenReturn(photos)
 
-        val photos = listOf(
-            Photo(
-                albumId = 101,
-                id = 202,
-                title = "Sample Photo",
-                url = "https://example.com/photo.png",
-                thumbnailUrl = "https://example.com/thumb.png"
-            )
-        )
-        val api = FakeApi(
-            loginResult = Account(apiKey = "api-key"),
-            usersResult = users,
-            postsResult = expectedPosts,
-            albumsResult = albums,
-            photosResult = photos
-        )
-        val repository = NetworkPostsRepository(
-            api = api,
-            credentialsProvider = TestCredentialsProvider(),
-            feedPostMapper = FeedPostMapper()
-        )
+        val repository = NetworkPostsRepository(api, credentialsProvider, FeedPostMapper())
 
         val result = repository.fetchPosts()
 
         assertEquals("Title", result.first().title)
-        assertEquals(1, api.loginCalls)
-        assertEquals(1, api.postsCalls)
-        assertEquals(1, api.usersCalls)
-        assertEquals(1, api.albumsCalls)
-        assertEquals(1, api.photosCalls)
-        assertEquals("api-key", api.lastApiKey)
+        inOrder(api) {
+            verify(api).login(any())
+            verify(api).users(apiKey)
+            verify(api).posts(apiKey, null)
+            verify(api).albums(apiKey, null)
+            verify(api).photos(apiKey, null)
+        }
     }
 
     @Test
     fun `fetch posts fails fast when credentials missing`() = runTest {
-        val api = FakeApi(
-            loginResult = Account(apiKey = "api-key"),
-            usersResult = emptyList(),
-            postsResult = emptyList(),
-            albumsResult = emptyList(),
-            photosResult = emptyList()
-        )
-        val repository = NetworkPostsRepository(
-            api = api,
-            credentialsProvider = object : CredentialsProvider {
-                override val username: String = ""
-                override val password: String = ""
-            },
-            feedPostMapper = FeedPostMapper()
-        )
+
+        val api = mock<Api>()
+        val credentialsProvider = mock<CredentialsProvider> {
+            on { username } doReturn ""
+            on { password } doReturn ""
+        }
+        val repository = NetworkPostsRepository(api, credentialsProvider, FeedPostMapper())
 
         val error = runCatching { repository.fetchPosts() }.exceptionOrNull()
 
         assertTrue(error is IllegalStateException)
-        assertEquals(0, api.loginCalls)
-    }
-
-    private class FakeApi(
-        private val loginResult: Account,
-        private val usersResult: List<User>,
-        private val postsResult: List<Post>,
-        private val albumsResult: List<Album>,
-        private val photosResult: List<Photo>
-    ) : Api {
-        var loginCalls = 0
-        var usersCalls = 0
-        var postsCalls = 0
-        var albumsCalls = 0
-        var photosCalls = 0
-        var lastApiKey: String? = null
-
-        override suspend fun login(credentials: String?): Account {
-            loginCalls += 1
-            return loginResult
-        }
-
-        override suspend fun users(apiKey: String): List<User> {
-            usersCalls += 1
-            lastApiKey = apiKey
-            return usersResult
-        }
-
-        override suspend fun posts(apiKey: String, userId: Int?): List<Post> {
-            postsCalls += 1
-            lastApiKey = apiKey
-            return postsResult
-        }
-
-        override suspend fun albums(apiKey: String, userId: Int?): List<Album> {
-            albumsCalls += 1
-            lastApiKey = apiKey
-            return albumsResult
-        }
-
-        override suspend fun photos(apiKey: String, albumId: Int?): List<Photo> {
-            photosCalls += 1
-            lastApiKey = apiKey
-            return photosResult
-        }
-    }
-
-
-    private class TestCredentialsProvider : CredentialsProvider {
-        override val username: String = "hello"
-        override val password: String = "world"
+        verify(api, org.mockito.kotlin.never()).login(any())
     }
 
     private object TestData {
@@ -165,4 +88,37 @@ class NetworkPostsRepositoryTest {
             bs = "BS"
         )
     }
+
+    private fun samplePost(userId: Int, id: Int, title: String) = Post(
+        userId = userId,
+        id = id,
+        title = title,
+        body = "Description"
+    )
+
+    private fun sampleUser(id: Int) = User(
+        id = id,
+        avatarUrl = "https://example.com/avatar.png",
+        name = "Test User",
+        username = "user",
+        email = "user@example.com",
+        address = TestData.address(),
+        phone = "123",
+        website = "example.com",
+        company = TestData.company()
+    )
+
+    private fun sampleAlbum(userId: Int, id: Int) = Album(
+        userId = userId,
+        id = id,
+        title = "Sample Album"
+    )
+
+    private fun samplePhoto(albumId: Int, id: Int) = Photo(
+        albumId = albumId,
+        id = id,
+        title = "Sample Photo",
+        url = "https://example.com/photo.png",
+        thumbnailUrl = "https://example.com/thumb.png"
+    )
 }

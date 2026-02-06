@@ -7,13 +7,16 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import life.league.challenge.kotlin.domain.repository.PostsRepository
+import life.league.challenge.kotlin.core.network.ApiError
+import life.league.challenge.kotlin.core.network.ApiResult
 import life.league.challenge.kotlin.domain.usecase.GetPostsUseCase
 import life.league.challenge.kotlin.model.FeedPost
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PostsViewModelTest {
@@ -41,9 +44,10 @@ class PostsViewModelTest {
                 avatarUrl = null
             )
         )
-        val repository = FakePostsRepository(posts = posts)
+        val getPostsUseCase: GetPostsUseCase = mock()
+        whenever(getPostsUseCase.invoke()).thenReturn(ApiResult.Success(posts))
 
-        val viewModel = PostsViewModel(GetPostsUseCase(repository), dispatcher)
+        val viewModel = PostsViewModel(getPostsUseCase, dispatcher)
 
         advanceUntilIdle()
 
@@ -53,19 +57,23 @@ class PostsViewModelTest {
 
     @Test
     fun `load posts emits loading then success`() = runTest {
-        val repository = FakePostsRepository(
-            posts = listOf(
-                FeedPost(
-                    id = 2,
-                    title = "Another",
-                    description = "Sample content",
-                    username = "author",
-                    avatarUrl = null
+
+        val getPostsUseCase: GetPostsUseCase = mock()
+        whenever(getPostsUseCase.invoke()).thenReturn(
+            ApiResult.Success(
+                listOf(
+                    FeedPost(
+                        id = 2,
+                        title = "Another",
+                        description = "Sample content",
+                        username = "author",
+                        avatarUrl = null
+                    )
                 )
             )
         )
 
-        val viewModel = PostsViewModel(GetPostsUseCase(repository), dispatcher)
+        val viewModel = PostsViewModel(getPostsUseCase, dispatcher)
 
         val initialState = viewModel.uiState.value
         assertTrue(initialState is PostsUiState.Loading)
@@ -78,8 +86,11 @@ class PostsViewModelTest {
 
     @Test
     fun `load posts emits error with message`() = runTest {
-        val repository = FakePostsRepository(shouldThrow = true)
-        val viewModel = PostsViewModel(GetPostsUseCase(repository), dispatcher)
+        val getPostsUseCase: GetPostsUseCase = mock()
+        whenever(getPostsUseCase.invoke()).thenReturn(
+            ApiResult.Failure(ApiError.Network("Network down"))
+        )
+        val viewModel = PostsViewModel(getPostsUseCase, dispatcher)
 
         advanceUntilIdle()
 
@@ -87,16 +98,4 @@ class PostsViewModelTest {
         assertTrue(state is PostsUiState.Error && state.message.isNotBlank())
     }
 
-    /** Test double that returns canned results or throws for error cases. */
-    private class FakePostsRepository(
-        private val posts: List<FeedPost> = emptyList(),
-        private val shouldThrow: Boolean = false
-    ) : PostsRepository {
-        override suspend fun fetchPosts(): List<FeedPost> {
-            if (shouldThrow) {
-                error("boom")
-            }
-            return posts
-        }
-    }
 }

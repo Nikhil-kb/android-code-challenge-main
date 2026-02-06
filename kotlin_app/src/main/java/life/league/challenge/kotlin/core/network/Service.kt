@@ -10,6 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 object Service {
 
+    /** Lazily initialized API service for the app. */
     val api: Api by lazy {
         Retrofit.Builder()
             .baseUrl(BuildConfig.API_BASE_URL)

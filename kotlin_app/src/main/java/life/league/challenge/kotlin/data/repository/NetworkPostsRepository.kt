@@ -1,6 +1,10 @@
 package life.league.challenge.kotlin.data.repository
 
 import life.league.challenge.kotlin.core.network.Api
+import life.league.challenge.kotlin.core.network.ApiCallRunner
+import life.league.challenge.kotlin.core.network.ApiError
+import life.league.challenge.kotlin.core.network.ApiResult
+import life.league.challenge.kotlin.core.network.MissingApiKeyException
 import life.league.challenge.kotlin.core.network.login
 import life.league.challenge.kotlin.data.auth.CredentialsProvider
 import life.league.challenge.kotlin.data.mapper.FeedPostMapper
@@ -14,18 +18,26 @@ import javax.inject.Inject
 class NetworkPostsRepository @Inject constructor(
     private val api: Api,
     private val credentialsProvider: CredentialsProvider,
-    private val feedPostMapper: FeedPostMapper
-    ) : PostsRepository {
-    override suspend fun fetchPosts(): List<FeedPost> {
-        check(credentialsProvider.username.isNotBlank()) { "API username is missing. Set CHALLENGE_API_USERNAME." }
-        check(credentialsProvider.password.isNotBlank()) { "API password is missing. Set CHALLENGE_API_PASSWORD." }
+    private val feedPostMapper: FeedPostMapper,
+    private val apiCallRunner: ApiCallRunner
+) : PostsRepository {
+    override suspend fun fetchPosts(): ApiResult<List<FeedPost>> {
+        val username = credentialsProvider.username
+        val password = credentialsProvider.password
+        if (username.isBlank() || password.isBlank()) {
+            return ApiResult.Failure(
+                ApiError.Configuration("API credentials are missing. Set CHALLENGE_API_USERNAME/CHALLENGE_API_PASSWORD.")
+            )
+        }
 
-        val account = api.login(credentialsProvider.username, credentialsProvider.password)
-        val apiKey = account.apiKey ?: error("Missing api key")
-        val users = api.users(apiKey)
-        val posts = api.posts(apiKey)
-        val albums = api.albums(apiKey)
-        val photos = api.photos(apiKey)
-        return feedPostMapper.map(posts, users, albums, photos)    }
-
+        return apiCallRunner.execute {
+            val account = api.login(username, password)
+            val apiKey = account.apiKey ?: throw MissingApiKeyException()
+            val users = api.users(apiKey)
+            val posts = api.posts(apiKey)
+            val albums = api.albums(apiKey)
+            val photos = api.photos(apiKey)
+            feedPostMapper.map(posts, users, albums, photos)
+        }
+    }
 }
