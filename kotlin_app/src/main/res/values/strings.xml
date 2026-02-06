@@ -1,3 +1,5 @@
 <resources>
   <string name="app_name">Mobile Coding Challenge</string>
+  <string name="api_username">hello</string>
+  <string name="api_password">world</string>
 </resources>
