@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.main
+package life.league.challenge.kotlin.presentation.posts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -9,10 +9,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import life.league.challenge.kotlin.domain.repository.PostsRepository
+import life.league.challenge.kotlin.domain.usecase.GetPostsUseCase
 
 /** ViewModel responsible for loading posts and exposing UI state. */
 class PostsViewModel(
-    private val repository: PostsRepository,
+    private val getPostsUseCase: GetPostsUseCase,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
@@ -27,7 +29,7 @@ class PostsViewModel(
         _uiState.value = PostsUiState.Loading
         viewModelScope.launch(ioDispatcher) {
             _uiState.value = try {
-                PostsUiState.Success(repository.fetchPosts())
+                PostsUiState.Success(getPostsUseCase())
             } catch (throwable: Throwable) {
                 PostsUiState.Error(throwable.message ?: "Unable to load posts")
             }
@@ -37,12 +39,12 @@ class PostsViewModel(
 
 /** Factory for providing a [PostsViewModel] with a repository dependency. */
 class PostsViewModelFactory(
-    private val repository: PostsRepository
+    private val getPostsUseCase: GetPostsUseCase
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(PostsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return PostsViewModel(repository) as T
+            return PostsViewModel(getPostsUseCase) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.api
+package life.league.challenge.kotlin.core.network
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

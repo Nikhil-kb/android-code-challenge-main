@@ -1,8 +1,9 @@
-package life.league.challenge.kotlin.main
+package life.league.challenge.kotlin.data.repository
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import life.league.challenge.kotlin.api.Api
+import life.league.challenge.kotlin.core.network.Api
+import life.league.challenge.kotlin.data.auth.CredentialsProvider
 import life.league.challenge.kotlin.model.Account
 import life.league.challenge.kotlin.model.Album
 import life.league.challenge.kotlin.model.Photo
@@ -76,7 +77,6 @@ class NetworkPostsRepositoryTest {
         assertEquals("api-key", api.lastApiKey)
     }
 
-    /** Fake API for asserting login and posts sequencing. */
     private class FakeApi(
         private val loginResult: Account,
         private val usersResult: List<User>,
@@ -121,7 +121,7 @@ class NetworkPostsRepositoryTest {
         }
     }
 
-    /** Basic credentials provider for repository tests. */
+
     private class TestCredentialsProvider : CredentialsProvider {
         override val username: String = "hello"
         override val password: String = "world"

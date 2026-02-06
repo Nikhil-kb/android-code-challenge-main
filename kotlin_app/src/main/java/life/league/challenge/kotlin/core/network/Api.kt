@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.api
+package life.league.challenge.kotlin.core.network
 import life.league.challenge.kotlin.model.Account
 import life.league.challenge.kotlin.model.Album
 import life.league.challenge.kotlin.model.Photo

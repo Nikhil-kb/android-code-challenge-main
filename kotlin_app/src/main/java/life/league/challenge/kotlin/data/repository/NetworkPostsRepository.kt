@@ -1,17 +1,14 @@
-package life.league.challenge.kotlin.main
+package life.league.challenge.kotlin.data.repository
 
-import life.league.challenge.kotlin.api.Api
-import life.league.challenge.kotlin.api.login
+import life.league.challenge.kotlin.core.network.Api
+import life.league.challenge.kotlin.core.network.login
+import life.league.challenge.kotlin.data.auth.CredentialsProvider
+import life.league.challenge.kotlin.domain.repository.PostsRepository
 import life.league.challenge.kotlin.model.Album
 import life.league.challenge.kotlin.model.FeedPost
 import life.league.challenge.kotlin.model.Photo
 import life.league.challenge.kotlin.model.Post
 import life.league.challenge.kotlin.model.User
-
-/** Abstraction for fetching feed posts from a data source. */
-interface PostsRepository {
-    suspend fun fetchPosts(): List<FeedPost>
-}
 
 /** Network-backed repository that authenticates before fetching posts. */
 class NetworkPostsRepository(

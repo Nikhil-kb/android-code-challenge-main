@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.main
+package life.league.challenge.kotlin.data.auth
 
 import android.content.Context
 import life.league.challenge.kotlin.R

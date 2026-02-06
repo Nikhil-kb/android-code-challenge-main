@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.main
+package life.league.challenge.kotlin.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,8 +7,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import life.league.challenge.kotlin.api.Service
-import life.league.challenge.kotlin.api.login
+import life.league.challenge.kotlin.core.network.Service
+import life.league.challenge.kotlin.data.repository.NetworkPostsRepository
+import life.league.challenge.kotlin.presentation.posts.PostsScreen
+import life.league.challenge.kotlin.presentation.posts.PostsViewModel
+import life.league.challenge.kotlin.presentation.posts.PostsViewModelFactory
+import life.league.challenge.kotlin.data.auth.ResourceCredentialsProvider
+import life.league.challenge.kotlin.domain.usecase.GetPostsUseCase
 
 class MainActivity : ComponentActivity() {
 
@@ -20,7 +25,7 @@ class MainActivity : ComponentActivity() {
         )
         val viewModel = ViewModelProvider(
             this,
-            PostsViewModelFactory(repository)
+            PostsViewModelFactory(GetPostsUseCase(repository))
         )[PostsViewModel::class.java]
 
         setContent {

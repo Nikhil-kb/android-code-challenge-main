@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.main
+package life.league.challenge.kotlin.presentation.posts
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -7,6 +7,8 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import life.league.challenge.kotlin.domain.repository.PostsRepository
+import life.league.challenge.kotlin.domain.usecase.GetPostsUseCase
 import life.league.challenge.kotlin.model.FeedPost
 import org.junit.After
 import org.junit.Assert.assertTrue
@@ -41,7 +43,7 @@ class PostsViewModelTest {
         )
         val repository = FakePostsRepository(posts = posts)
 
-        val viewModel = PostsViewModel(repository, dispatcher)
+        val viewModel = PostsViewModel(GetPostsUseCase(repository), dispatcher)
 
         advanceUntilIdle()
 
@@ -63,7 +65,7 @@ class PostsViewModelTest {
             )
         )
 
-        val viewModel = PostsViewModel(repository, dispatcher)
+        val viewModel = PostsViewModel(GetPostsUseCase(repository), dispatcher)
 
         val initialState = viewModel.uiState.value
         assertTrue(initialState is PostsUiState.Loading)
@@ -77,7 +79,7 @@ class PostsViewModelTest {
     @Test
     fun `load posts emits error with message`() = runTest {
         val repository = FakePostsRepository(shouldThrow = true)
-        val viewModel = PostsViewModel(repository, dispatcher)
+        val viewModel = PostsViewModel(GetPostsUseCase(repository), dispatcher)
 
         advanceUntilIdle()
 

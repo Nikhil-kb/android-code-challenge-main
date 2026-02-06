@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.main
+package life.league.challenge.kotlin.presentation.posts
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
