@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.model
+package life.league.challenge.kotlin.domain.posts.model
 
 /** Combines post content with user metadata for display on the feed. */
 data class FeedPost(

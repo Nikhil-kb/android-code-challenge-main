@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import life.league.challenge.kotlin.core.network.ApiResult
 import life.league.challenge.kotlin.di.IoDispatcher
-import life.league.challenge.kotlin.domain.usecase.GetPostsUseCase
+import life.league.challenge.kotlin.domain.posts.usecase.GetPostsUseCase
 import javax.inject.Inject
 
 /** ViewModel responsible for loading posts and exposing UI state. */
@@ -19,7 +19,7 @@ import javax.inject.Inject
 class PostsViewModel @Inject constructor(
     private val getPostsUseCase: GetPostsUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
-    ) : ViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PostsUiState>(PostsUiState.Loading)
     val uiState: StateFlow<PostsUiState> = _uiState.asStateFlow()

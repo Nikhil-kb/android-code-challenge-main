@@ -6,8 +6,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import life.league.challenge.kotlin.data.auth.CredentialsProvider
 import life.league.challenge.kotlin.data.auth.ResourceCredentialsProvider
-import life.league.challenge.kotlin.data.repository.NetworkPostsRepository
-import life.league.challenge.kotlin.domain.repository.PostsRepository
+import life.league.challenge.kotlin.data.posts.repository.NetworkPostsRepository
+import life.league.challenge.kotlin.domain.posts.repository.PostsRepository
 import javax.inject.Singleton
 
 /** Binding module for interfaces used across layers. */

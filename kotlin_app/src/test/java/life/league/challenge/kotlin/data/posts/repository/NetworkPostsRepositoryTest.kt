@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.data.repository
+package life.league.challenge.kotlin.data.posts.repository
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -8,16 +8,16 @@ import life.league.challenge.kotlin.core.network.ApiError
 import life.league.challenge.kotlin.core.network.ApiErrorMapper
 import life.league.challenge.kotlin.core.network.ApiResult
 import life.league.challenge.kotlin.data.auth.CredentialsProvider
-import life.league.challenge.kotlin.data.mapper.FeedPostMapper
-import life.league.challenge.kotlin.model.Account
-import life.league.challenge.kotlin.model.Address
-import life.league.challenge.kotlin.model.Album
-import life.league.challenge.kotlin.model.Company
-import life.league.challenge.kotlin.model.FeedPost
-import life.league.challenge.kotlin.model.Geo
-import life.league.challenge.kotlin.model.Photo
-import life.league.challenge.kotlin.model.Post
-import life.league.challenge.kotlin.model.User
+import life.league.challenge.kotlin.data.posts.mapper.FeedPostMapper
+import life.league.challenge.kotlin.data.posts.remote.model.Account
+import life.league.challenge.kotlin.data.posts.remote.model.Address
+import life.league.challenge.kotlin.data.posts.remote.model.Album
+import life.league.challenge.kotlin.data.posts.remote.model.Company
+import life.league.challenge.kotlin.domain.posts.model.FeedPost
+import life.league.challenge.kotlin.data.posts.remote.model.Geo
+import life.league.challenge.kotlin.data.posts.remote.model.Photo
+import life.league.challenge.kotlin.data.posts.remote.model.Post
+import life.league.challenge.kotlin.data.posts.remote.model.User
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -25,7 +25,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 
@@ -40,7 +39,15 @@ class NetworkPostsRepositoryTest {
         val users = listOf(sampleUser(id = 7))
         val albums = listOf(sampleAlbum(userId = 7, id = 101))
         val photos = listOf(samplePhoto(albumId = 101, id = 202))
-        val feedPosts = listOf(FeedPost(id = 1, title = "Title", description = "Description", username = "user", avatarUrl = null))
+        val feedPosts = listOf(
+            FeedPost(
+                id = 1,
+                title = "Title",
+                description = "Description",
+                username = "user",
+                avatarUrl = null
+            )
+        )
         val apiKey = "api-key"
         val api = mock<Api>()
         val credentialsProvider = mock<CredentialsProvider> {
@@ -117,13 +124,15 @@ class NetworkPostsRepositoryTest {
             city = "City",
             zipcode = "12345",
             geo = Geo(lat = "0", lng = "0")
-        ),        phone = "123",
+        ),
+        phone = "123",
         website = "example.com",
         company = Company(
             name = "Company",
             catchPhrase = "Catch",
             bs = "BS"
-        )    )
+        )
+    )
 
     private fun sampleAlbum(userId: Int, id: Int) = Album(
         userId = userId,

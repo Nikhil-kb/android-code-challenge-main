@@ -1,12 +1,12 @@
-package life.league.challenge.kotlin.data.mapper
+package life.league.challenge.kotlin.data.posts.mapper
 
-import life.league.challenge.kotlin.model.Address
-import life.league.challenge.kotlin.model.Album
-import life.league.challenge.kotlin.model.Company
-import life.league.challenge.kotlin.model.Geo
-import life.league.challenge.kotlin.model.Photo
-import life.league.challenge.kotlin.model.Post
-import life.league.challenge.kotlin.model.User
+import life.league.challenge.kotlin.data.posts.remote.model.Address
+import life.league.challenge.kotlin.data.posts.remote.model.Album
+import life.league.challenge.kotlin.data.posts.remote.model.Company
+import life.league.challenge.kotlin.data.posts.remote.model.Geo
+import life.league.challenge.kotlin.data.posts.remote.model.Photo
+import life.league.challenge.kotlin.data.posts.remote.model.Post
+import life.league.challenge.kotlin.data.posts.remote.model.User
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -55,7 +55,6 @@ class FeedPostMapperTest {
         assertNull(result.first().avatarUrl)
         assertEquals("Unknown", result.first().username)
     }
-
 
     private fun samplePost() = Post(
         userId = 1,

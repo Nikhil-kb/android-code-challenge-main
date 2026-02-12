@@ -1,10 +1,10 @@
-package life.league.challenge.kotlin.data.mapper
+package life.league.challenge.kotlin.data.posts.mapper
 
-import life.league.challenge.kotlin.model.Album
-import life.league.challenge.kotlin.model.FeedPost
-import life.league.challenge.kotlin.model.Photo
-import life.league.challenge.kotlin.model.Post
-import life.league.challenge.kotlin.model.User
+import life.league.challenge.kotlin.data.posts.remote.model.Album
+import life.league.challenge.kotlin.data.posts.remote.model.Photo
+import life.league.challenge.kotlin.data.posts.remote.model.Post
+import life.league.challenge.kotlin.data.posts.remote.model.User
+import life.league.challenge.kotlin.domain.posts.model.FeedPost
 import javax.inject.Inject
 
 /**
@@ -20,13 +20,17 @@ class FeedPostMapper @Inject constructor() {
         photos: List<Photo>
     ): List<FeedPost> {
         val usersById = users.associateBy { it.id }
-        val albumsById = albums.associateBy { it.id }
-        val photosByAlbumId = photos.groupBy { it.albumId }
+        val albumsByUserId = albums.groupBy { it.userId }
+            .mapValues { (_, userAlbums) -> userAlbums.firstOrNull() }
+        val firstPhotoByAlbumId = photos.groupBy { it.albumId }
+            .mapValues { (_, albumPhotos) -> albumPhotos.firstOrNull() }
 
         return posts.map { post ->
             val user = usersById[post.userId]
-            val avatar = user?.avatarUrl ?: albumsById.values.firstOrNull { it.userId == post.userId }
-                ?.let { album -> photosByAlbumId[album.id]?.firstOrNull()?.thumbnailUrl }
+            val avatar = user?.avatarUrl
+                ?: albumsByUserId[post.userId]?.let { album ->
+                    firstPhotoByAlbumId[album.id]?.thumbnailUrl
+                }
 
             FeedPost(
                 id = post.id,

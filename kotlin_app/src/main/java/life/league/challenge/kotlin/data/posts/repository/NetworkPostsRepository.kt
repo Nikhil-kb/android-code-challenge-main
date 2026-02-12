@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.data.repository
+package life.league.challenge.kotlin.data.posts.repository
 
 import life.league.challenge.kotlin.core.network.Api
 import life.league.challenge.kotlin.core.network.ApiCallRunner
@@ -7,9 +7,9 @@ import life.league.challenge.kotlin.core.network.ApiResult
 import life.league.challenge.kotlin.core.network.MissingApiKeyException
 import life.league.challenge.kotlin.core.network.login
 import life.league.challenge.kotlin.data.auth.CredentialsProvider
-import life.league.challenge.kotlin.data.mapper.FeedPostMapper
-import life.league.challenge.kotlin.domain.repository.PostsRepository
-import life.league.challenge.kotlin.model.FeedPost
+import life.league.challenge.kotlin.data.posts.mapper.FeedPostMapper
+import life.league.challenge.kotlin.domain.posts.repository.PostsRepository
+import life.league.challenge.kotlin.domain.posts.model.FeedPost
 import javax.inject.Inject
 
 /**

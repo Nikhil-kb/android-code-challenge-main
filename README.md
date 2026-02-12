@@ -1,24 +1,45 @@
 # android-code-challenge
-This repo is for the Android coding interview for new developers :)
+A Kotlin + Jetpack Compose application built as a clean-architecture sample. The project now follows a **feature-first, layered structure** with **MVVM** in the presentation layer and clear separation of responsibilities across data, domain, and UI.
 
-## What was improved
+## Highlights
 
-- Added **Hilt dependency injection** for app-wide dependency graph management.
-- Refactored data mapping into a dedicated mapper (`FeedPostMapper`) to keep repository logic focused.
-- Kept architecture layered:
-    - `presentation` (Compose + ViewModel)
-    - `domain` (use case + repository contract)
-    - `data` (repository + mapper + credential provider)
-    - `di` (Hilt modules and qualifiers)
-- Removed hardcoded API credentials from resources.
-- Added BuildConfig-based configuration for endpoint and credentials via Gradle properties.
-- Added/updated unit tests for mapper and repository behavior.
+- **Clean Architecture + MVVM** with feature-first packages.
+- **Data layer** is responsible for network DTOs, mapping, and repositories.
+- **Domain layer** contains business models and use cases.
+- **Presentation layer** exposes UI state through ViewModels.
+- **Optimized mapping** in the feed pipeline to avoid repeated list scans.
+- **Hilt dependency injection** for app-wide wiring.
+
+## Architecture at a glance
+
+```
+app/                          # Android entry points
+core/                         # Networking utilities + API runner
+
+data/
+  posts/
+    remote/model/             # Network DTOs (Account, User, Post, ...)
+    mapper/                   # DTO -> domain model mappers
+    repository/               # Repository implementations
+  auth/                       # Credentials providers
+
+domain/
+  posts/
+    model/                    # Core FeedPost model
+    repository/               # Repository contracts
+    usecase/                  # Use cases (GetPostsUseCase)
+
+presentation/
+  posts/                      # Compose UI, ViewModel, UI state
+
+ui/theme/                     # Material theme
+```
 
 ## Configuration
 
-Add these properties in either:
-- `~/.gradle/gradle.properties`, or
-- project `local.properties` / `gradle.properties`.
+Add the following properties in **one** of these locations:
+- `~/.gradle/gradle.properties`
+- Project-level `local.properties` or `gradle.properties`
 
 ```properties
 CHALLENGE_BASE_URL=https://northamerica-northeast1-league-engineering-hiring.cloudfunctions.net/mobile-challenge-api/
@@ -28,15 +49,6 @@ CHALLENGE_API_PASSWORD=world
 
 > Credentials are intentionally not stored in source resources.
 
-## Tech stack
-
-- Kotlin
-- Jetpack Compose
-- Material 3 theme from `ui.theme`
-- Coroutines
-- Retrofit + Gson converter
-- Hilt (DI)
-- JUnit + coroutines-test
 
 ## Build & test
 
@@ -46,8 +58,15 @@ CHALLENGE_API_PASSWORD=world
 ```
 
 ## Notes for reviewers
+- `MainActivity` hosts Compose and receives the `PostsViewModel` via Hilt.
+- `NetworkPostsRepository` authenticates once, fetches remote collections, and uses the mapper to compose feed data.
+- `FeedPostMapper` now precomputes lookup maps to avoid repeated list scans.
 
-- `MainActivity` now receives `PostsViewModel` through Hilt (`hiltViewModel()`).
-- `ChallengeApplication` initializes Hilt graph.
-- `NetworkPostsRepository` validates credentials are present before login.
-- `FeedPostMapper` has dedicated unit tests for avatar fallback behavior.
+## Tech stack
+
+- Kotlin
+- Jetpack Compose + Material 3
+- Coroutines + Flow
+- Retrofit + Gson
+- Hilt
+- JUnit + kotlinx-coroutines-test

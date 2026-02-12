@@ -31,7 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import life.league.challenge.kotlin.R
-import life.league.challenge.kotlin.model.FeedPost
+import life.league.challenge.kotlin.domain.posts.model.FeedPost
 
 /** Root screen that renders loading, error, or feed content for posts. */
 @Composable

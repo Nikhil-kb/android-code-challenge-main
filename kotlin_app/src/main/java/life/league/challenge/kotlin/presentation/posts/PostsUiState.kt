@@ -1,6 +1,6 @@
 package life.league.challenge.kotlin.presentation.posts
 
-import life.league.challenge.kotlin.model.FeedPost
+import life.league.challenge.kotlin.domain.posts.model.FeedPost
 
 /** UI state for the home feed. */
 sealed interface PostsUiState {

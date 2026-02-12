@@ -1,4 +1,4 @@
-package life.league.challenge.kotlin.model
+package life.league.challenge.kotlin.data.posts.remote.model
 
 import com.google.gson.annotations.SerializedName
 

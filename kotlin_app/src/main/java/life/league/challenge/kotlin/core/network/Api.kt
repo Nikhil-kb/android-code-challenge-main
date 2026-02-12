@@ -1,9 +1,10 @@
 package life.league.challenge.kotlin.core.network
-import life.league.challenge.kotlin.model.Account
-import life.league.challenge.kotlin.model.Album
-import life.league.challenge.kotlin.model.Photo
-import life.league.challenge.kotlin.model.Post
-import life.league.challenge.kotlin.model.User
+
+import life.league.challenge.kotlin.data.posts.remote.model.Account
+import life.league.challenge.kotlin.data.posts.remote.model.Album
+import life.league.challenge.kotlin.data.posts.remote.model.Photo
+import life.league.challenge.kotlin.data.posts.remote.model.Post
+import life.league.challenge.kotlin.data.posts.remote.model.User
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query
@@ -48,5 +49,10 @@ interface Api {
 /**
  * Overloaded Login API extension function to handle authorization header encoding
  */
-suspend fun Api.login(username: String, password: String)
-        = login("Basic " + android.util.Base64.encodeToString("$username:$password".toByteArray(), android.util.Base64.NO_WRAP))
+suspend fun Api.login(username: String, password: String) =
+    login(
+        "Basic " + android.util.Base64.encodeToString(
+            "$username:$password".toByteArray(),
+            android.util.Base64.NO_WRAP
+        )
+    )

@@ -9,8 +9,8 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import life.league.challenge.kotlin.core.network.ApiError
 import life.league.challenge.kotlin.core.network.ApiResult
-import life.league.challenge.kotlin.domain.usecase.GetPostsUseCase
-import life.league.challenge.kotlin.model.FeedPost
+import life.league.challenge.kotlin.domain.posts.usecase.GetPostsUseCase
+import life.league.challenge.kotlin.domain.posts.model.FeedPost
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -57,7 +57,6 @@ class PostsViewModelTest {
 
     @Test
     fun `load posts emits loading then success`() = runTest {
-
         val getPostsUseCase: GetPostsUseCase = mock()
         whenever(getPostsUseCase.invoke()).thenReturn(
             ApiResult.Success(
